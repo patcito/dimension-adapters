@@ -18,7 +18,6 @@ const PUT_MARKETPLACE = '0x31248663adccdbcad155555b7717697b76cf570c';
 const TREASURY = '0x1118e1c057211306a40A4d7006C040dbfE1370Cb';
 
 const yieldClaimedEvent = 'event YieldClaimed(address yieldClaimer, address token, uint256 amount)';
-const transferEvent = 'event Transfer(address indexed from, address indexed to, uint256 value)';
 
 const methodology = {
   Fees: "Yield generated from deposited assets in Flying Tulip wrappers plus marketplace fees from PUT trades.",
@@ -60,7 +59,7 @@ const fetch = async (options: FetchOptions): Promise<FetchResultV2> => {
   // The token is the contract that emitted the event (log.address)
   marketplaceLogs.forEach((log: any) => {
     const token = log.address;
-    const amount = log.data; // amount is in data for non-indexed Transfer
+    const amount = BigInt(log.data); // decode hex to BigInt
     dailyFees.add(token, amount);
     dailyRevenue.add(token, amount);
   });
