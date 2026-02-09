@@ -21,6 +21,12 @@ const PUT_MARKETPLACE = '0x31248663adccdbcad155555b7717697b76cf570c';
 // Treasury address
 const TREASURY = '0x1118e1c057211306a40A4d7006C040dbfE1370Cb';
 
+// stETH on Ethereum mainnet
+const STETH = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
+
+// Original WETH principal deposited (2192.991693 ETH in 18-decimal wei)
+const STETH_PRINCIPAL = BigInt('2192991693000000000000');
+
 const fetch = async (options: FetchOptions): Promise<FetchResultV2> => {
   const dailyFees = options.createBalances();
 
@@ -38,6 +44,17 @@ const fetch = async (options: FetchOptions): Promise<FetchResultV2> => {
     dailyFees.add(token, amount, METRIC.ASSETS_YIELDS);
   });
   
+  // Track stETH yield: current balance - original WETH principal
+  const stethBalance = await options.api.call({
+    abi: 'erc20:balanceOf',
+    target: STETH,
+    params: [TREASURY],
+  });
+  const stethYield = BigInt(stethBalance) - STETH_PRINCIPAL;
+  if (stethYield > 0n) {
+    dailyFees.add(STETH, stethYield, METRIC.ASSETS_YIELDS);
+  }
+
   const tokenReceived = await addTokensReceived({
     options,
     target: TREASURY,
